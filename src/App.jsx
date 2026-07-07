@@ -15,6 +15,7 @@ import Step1MyScoreIQ from './pages/Step1MyScoreIQ'
 import Step2MyScoreIQ from './pages/Step2MyScoreIQ'
 import Step3Application from './pages/Step3Application'
 import ThankYou from './pages/ThankYou'
+import NotFound from './pages/NotFound'
 
 // Service Pages
 import PersonalCredit from './pages/PersonalCredit'
@@ -59,6 +60,7 @@ function App() {
         <Route path="sms-terms" element={<SMSTerms />} />
         <Route path="refund-policy" element={<RefundPolicy />} />
         <Route path="e-sign-consent" element={<ESignConsent />} />
+        <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
   )
