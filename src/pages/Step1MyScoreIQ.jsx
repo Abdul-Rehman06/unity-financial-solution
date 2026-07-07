@@ -78,7 +78,7 @@ const Step1MyScoreIQ = () => {
                 </div>
 
                 <a 
-                  href="https://api.ahriat.com/l/VfYS_d-dy" // [INSERT MYSCOREIQ AFFILIATE LINK]
+                  href="https://api.ahriat.com/l/VfYS_d-dy"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full flex items-center justify-center gap-3 bg-accent-gold text-white font-bold py-5 px-8 rounded-full shadow-[0_10px_20px_rgba(200,157,60,0.3)] hover:scale-[1.02] hover:shadow-[0_15px_30px_rgba(200,157,60,0.4)] transition-all duration-300 text-lg uppercase tracking-wide"
@@ -107,7 +107,7 @@ const Step1MyScoreIQ = () => {
                 </div>
 
                 <Button 
-                  to="/step-2" // Adjust path as needed
+                  to="/step-2"
                   variant="primary" 
                   showArrow 
                   className="w-full text-lg py-5 bg-white text-primary-navy hover:bg-bg-light hover:text-primary-navy"
