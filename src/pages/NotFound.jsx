@@ -1,76 +1,285 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { useInView } from 'react-intersection-observer';
-import { ArrowRight, Home, Search } from 'lucide-react';
-import Button from '../components/Button';
-import MeshGradient from '../components/ui/mesh-gradient-shader';
+import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft, Home } from "lucide-react";
 
-const FadeUp = ({ children, delay = 0, className = '' }) => {
-  const [ref, inView] = useInView({ triggerOnce: true, rootMargin: '-50px' });
+export default function NotFoundPage() {
   return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 40 }}
-      animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
-      transition={{ duration: 0.8, delay, ease: [0.16, 1, 0.3, 1] }}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
-};
-
-const NotFound = () => {
-  return (
-    <div className="flex flex-col w-full bg-white">
-      <section className="relative overflow-hidden bg-primary-navy py-40 text-center px-6 sm:px-8">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-primary-navy/70" />
-        </div>
-
-        <div className="absolute inset-0 z-0 opacity-40 mix-blend-multiply pointer-events-none">
-          <MeshGradient speed={6} intensity={1.2} grain={0.3} />
-        </div>
-
-        <div className="max-w-5xl mx-auto relative z-10">
-          <FadeUp>
-            <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/15 rounded-full px-6 py-2 mb-10">
-              <Search className="w-4 h-4 text-accent-gold" />
-              <span className="text-accent-gold font-bold tracking-widest text-sm uppercase">Page Not Found</span>
-            </div>
-
-            <div className="text-7xl md:text-8xl lg:text-9xl font-heading font-bold text-white/90 tracking-tight mb-6">
-              404
-            </div>
-
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold text-white mb-8 leading-tight">
-              This Page Doesn’t Exist.
-            </h1>
-
-            <p className="text-xl md:text-2xl text-gray-300 leading-relaxed max-w-3xl mx-auto font-light mb-12">
-              The link may be incorrect, or the page may have moved. Use the options below to get back on track.
-            </p>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button to="/" variant="primary" className="px-10 py-5 text-lg w-full sm:w-auto justify-center">
-                <Home className="w-5 h-5 mr-2" />
-                Back to Home
-              </Button>
-              <Button
-                to="/apply"
-                variant="gold"
-                showArrow
-                className="px-10 py-5 text-lg w-full sm:w-auto justify-center shadow-[0_20px_40px_rgba(200,157,60,0.3)]"
-              >
-                Start Step 1
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </div>
-          </FadeUp>
-        </div>
-      </section>
+    <div className="w-full h-screen bg-primary-navy overflow-x-hidden flex justify-center items-center relative">
+      <MessageDisplay />
+      <CharactersAnimation />
+      <CircleAnimation />
     </div>
   );
-};
+}
 
-export default NotFound;
+function MessageDisplay() {
+  const navigate = useNavigate();
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, 1200);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <div className="absolute flex flex-col justify-center items-center w-[90%] h-[90%] z-[100]">
+      <div 
+        className={`flex flex-col items-center transition-opacity duration-500 ${
+          isVisible ? 'opacity-100' : 'opacity-0'
+        }`}
+      >
+        <div className="text-[25px] md:text-[35px] font-semibold text-accent-gold tracking-widest uppercase m-[1%]">
+          Page Not Found
+        </div>
+        <div className="text-[100px] md:text-[150px] font-heading font-bold text-white leading-none m-[1%] drop-shadow-lg">
+          404
+        </div>
+        <div className="text-base md:text-lg w-full max-w-2xl text-center text-gray-300 m-[1%] px-4">
+          The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.
+        </div>
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 mt-8">
+          <button
+            onClick={() => navigate(-1)}
+            className="text-white border-2 border-white/20 hover:bg-white hover:text-primary-navy transition-all duration-300 ease-in-out px-8 py-3 rounded-full text-base font-medium flex items-center justify-center gap-2 hover:scale-105"
+          >
+            <ArrowLeft className="w-5 h-5 transition-transform group-hover:-translate-x-1" />
+            Go Back
+          </button>
+          <button
+            onClick={() => navigate("/")}
+            className="bg-accent-gold text-white hover:bg-[#b08830] transition-all duration-300 ease-in-out px-8 py-3 rounded-full text-base font-medium flex items-center justify-center gap-2 hover:scale-105 shadow-[0_10px_20px_rgba(200,157,60,0.3)]"
+          >
+            <Home className="w-5 h-5 transition-transform group-hover:scale-110" />
+            Go Home
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CharactersAnimation() {
+  const charactersRef = useRef(null);
+
+  useEffect(() => {
+    const stickFigures = [
+      {
+        top: '0%',
+        src: 'https://raw.githubusercontent.com/RicardoYare/imagenes/9ef29f5bbe075b1d1230a996d87bca313b9b6a63/sticks/stick0.svg',
+        transform: 'rotateZ(-90deg)',
+        speedX: 1500,
+      },
+      {
+        top: '10%',
+        src: 'https://raw.githubusercontent.com/RicardoYare/imagenes/9ef29f5bbe075b1d1230a996d87bca313b9b6a63/sticks/stick1.svg',
+        speedX: 3000,
+        speedRotation: 2000,
+      },
+      {
+        top: '20%',
+        src: 'https://raw.githubusercontent.com/RicardoYare/imagenes/9ef29f5bbe075b1d1230a996d87bca313b9b6a63/sticks/stick2.svg',
+        speedX: 5000,
+        speedRotation: 1000,
+      },
+      {
+        top: '25%',
+        src: 'https://raw.githubusercontent.com/RicardoYare/imagenes/9ef29f5bbe075b1d1230a996d87bca313b9b6a63/sticks/stick0.svg',
+        speedX: 2500,
+        speedRotation: 1500,
+      },
+      {
+        top: '35%',
+        src: 'https://raw.githubusercontent.com/RicardoYare/imagenes/9ef29f5bbe075b1d1230a996d87bca313b9b6a63/sticks/stick0.svg',
+        speedX: 2000,
+        speedRotation: 300,
+      },
+      {
+        bottom: '5%',
+        src: 'https://raw.githubusercontent.com/RicardoYare/imagenes/9ef29f5bbe075b1d1230a996d87bca313b9b6a63/sticks/stick3.svg',
+        speedX: 0, 
+      },
+    ];
+
+    if (charactersRef.current) {
+      charactersRef.current.innerHTML = '';
+    }
+
+    stickFigures.forEach((figure, index) => {
+      const stick = document.createElement('img');
+      stick.classList.add('characters');
+      stick.style.position = 'absolute';
+      stick.style.width = '18%';
+      stick.style.height = '18%';
+      
+      // Theme matching: Invert black SVGs to white and lower opacity so they look like soft background elements
+      stick.style.filter = 'brightness(0) invert(1) opacity(0.15)';
+
+      if (figure.top) stick.style.top = figure.top;
+      if (figure.bottom) stick.style.bottom = figure.bottom;
+      stick.src = figure.src;
+      if (figure.transform) stick.style.transform = figure.transform;
+
+      charactersRef.current?.appendChild(stick);
+
+      if (index === 5) return;
+
+      stick.animate(
+        [{ left: '100%' }, { left: '-20%' }],
+        { duration: figure.speedX, easing: 'linear', fill: 'forwards' }
+      );
+
+      if (index === 0) return;
+
+      if (figure.speedRotation) {
+        stick.animate(
+          [{ transform: 'rotate(0deg)' }, { transform: 'rotate(-360deg)' }],
+          { duration: figure.speedRotation, iterations: Infinity, easing: 'linear' }
+        );
+      }
+    });
+
+    return () => {
+      if (charactersRef.current) {
+        charactersRef.current.innerHTML = '';
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (charactersRef.current) {
+        charactersRef.current.innerHTML = '';
+        charactersRef.current.dispatchEvent(new Event('contentchanged'));
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return (
+    <div 
+      ref={charactersRef} 
+      className="absolute w-[99%] h-[95%] pointer-events-none" 
+    />
+  );
+}
+
+function CircleAnimation() {
+  const canvasRef = useRef(null);
+  const requestIdRef = useRef();
+  const timerRef = useRef(0);
+  const circulosRef = useRef([]);
+
+  const initArr = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    circulosRef.current = [];
+    
+    for (let index = 0; index < 300; index++) {
+      const randomX = Math.floor(
+        Math.random() * ((canvas.width * 3) - (canvas.width * 1.2) + 1)
+      ) + (canvas.width * 1.2);
+      
+      const randomY = Math.floor(
+        Math.random() * ((canvas.height) - (canvas.height * (-0.2) + 1))
+      ) + (canvas.height * (-0.2));
+      
+      const size = canvas.width / 1000;
+      
+      circulosRef.current.push({ x: randomX, y: randomY, size });
+    }
+  };
+
+  const draw = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const context = canvas.getContext('2d');
+    if (!context) return;
+    
+    timerRef.current++;
+    context.setTransform(1, 0, 0, 1, 0, 0);
+    
+    const distanceX = canvas.width / 80;
+    const growthRate = canvas.width / 1000;
+    
+    // Theme matching: Gold particles floating
+    context.fillStyle = 'rgba(200, 157, 60, 0.4)'; 
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    
+    circulosRef.current.forEach((circulo) => {
+      context.beginPath();
+      
+      if (timerRef.current < 65) {
+        circulo.x = circulo.x - distanceX;
+        circulo.size = circulo.size + growthRate;
+      }
+      
+      if (timerRef.current > 65 && timerRef.current < 500) {
+        circulo.x = circulo.x - (distanceX * 0.02);
+        circulo.size = circulo.size + (growthRate * 0.2);
+      }
+      
+      context.arc(circulo.x, circulo.y, circulo.size, 0, 360);
+      context.fill();
+    });
+    
+    if (timerRef.current > 500) {
+      if (requestIdRef.current) {
+        cancelAnimationFrame(requestIdRef.current);
+      }
+      return;
+    }
+    
+    requestIdRef.current = requestAnimationFrame(draw);
+  };
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    
+    timerRef.current = 0;
+    initArr();
+    draw();
+    
+    const handleResize = () => {
+      if (!canvas) return;
+      
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      
+      timerRef.current = 0;
+      if (requestIdRef.current) {
+        cancelAnimationFrame(requestIdRef.current);
+      }
+      
+      const context = canvas.getContext('2d');
+      if (context) {
+        context.reset();
+      }
+      
+      initArr();
+      draw();
+    };
+    
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (requestIdRef.current) {
+        cancelAnimationFrame(requestIdRef.current);
+      }
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />;
+}
+
