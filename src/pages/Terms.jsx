@@ -257,8 +257,8 @@ const Terms = () => {
               <p>For questions about these Terms & Conditions, contact Unity Financial Solution:</p>
               <div className="bg-bg-light p-6 rounded-xl border border-border-gray not-prose mt-4">
                 <p className="font-bold text-primary-navy mb-2">Unity Financial Solution</p>
-                <p className="text-text-soft"><span className="font-semibold text-primary-navy">Email:</span> [Add Email Address]</p>
-                <p className="text-text-soft"><span className="font-semibold text-primary-navy">Phone:</span> [Add Phone Number]</p>
+                <p className="text-text-soft"><span className="font-semibold text-primary-navy">Email:</span> info@unityfinancialsolution.com</p>
+                <p className="text-text-soft"><span className="font-semibold text-primary-navy">Phone:</span> (858) 239-0594</p>
                 <p className="text-text-soft"><span className="font-semibold text-primary-navy">Address:</span> [Add Business Address]</p>
               </div>
             </FadeUp>

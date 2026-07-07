@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import Tilt from 'react-parallax-tilt';
@@ -22,31 +22,15 @@ const FadeUp = ({ children, delay = 0, className = '' }) => {
 };
 
 const Contact = () => {
-  const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    phone: '',
-    interest: '',
-    message: '',
-    consent: false
-  });
-
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log(formData);
-    alert('Thank you for your message. Our team will contact you shortly.');
-  };
-
-  const inputClass = "w-full px-5 py-4 bg-bg-light border border-border-gray rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-navy/20 focus:border-primary-navy focus:bg-white transition-all duration-300 text-text-charcoal";
-  const labelClass = "block text-sm font-semibold tracking-wide text-primary-navy mb-2 ml-1";
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = "https://api.ahriat.com/js/form_embed.js";
+    script.async = true;
+    document.body.appendChild(script);
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   return (
     <div className="flex flex-col w-full bg-white">
@@ -96,30 +80,6 @@ const Contact = () => {
           </FadeUp>
         </div>
       </section>
-
-      {/* Section 2: Contact Intro */}
-      <section className="py-32 bg-white relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-bg-light rounded-full blur-[100px] opacity-50 -translate-y-1/2 translate-x-1/3"></div>
-        <div className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12 relative z-10 text-center">
-          <FadeUp className="max-w-4xl mx-auto">
-            <h2 className="text-4xl md:text-5xl font-heading font-bold text-primary-navy mb-8">
-              Let’s Talk About Your Funding Goals
-            </h2>
-            <p className="text-xl text-text-soft leading-relaxed mb-6">
-              Whether you are ready to apply, have questions about your funding options, or need help understanding which path may fit your profile, our team is here to help.
-            </p>
-            <p className="text-xl text-text-soft leading-relaxed mb-10">
-              Unity Financial Solution works with individuals, entrepreneurs, and business owners who want to approach funding with clarity, preparation, and strategy.
-            </p>
-            <div className="inline-block border-l-4 border-primary-green pl-6 py-2 bg-bg-light pr-8 rounded-r-xl">
-              <p className="text-xl font-heading font-bold text-primary-navy">
-                Start the conversation today and let us help you identify your next step.
-              </p>
-            </div>
-          </FadeUp>
-        </div>
-      </section>
-
       {/* Section 3 & 4: Contact Information & Form */}
       <section id="contact-form" className="py-32 bg-bg-light relative overflow-hidden border-y border-border-gray">
         <div className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12 relative z-10">
@@ -140,7 +100,7 @@ const Contact = () => {
                       </div>
                       <div>
                         <h3 className="font-heading font-bold text-primary-navy text-lg mb-1">Phone</h3>
-                        <p className="text-text-soft">[Add Phone Number]</p>
+                        <p className="text-text-soft">(858) 239-0594</p>
                       </div>
                     </div>
                     
@@ -150,7 +110,7 @@ const Contact = () => {
                       </div>
                       <div>
                         <h3 className="font-heading font-bold text-primary-navy text-lg mb-1">Email</h3>
-                        <p className="text-text-soft">[Add Email Address]</p>
+                        <p className="text-text-soft">info@unityfinancialsolution.com</p>
                       </div>
                     </div>
                     
@@ -185,55 +145,25 @@ const Contact = () => {
                 <h2 className="text-3xl md:text-4xl font-heading font-bold text-primary-navy mb-4 relative z-10">Send Us a Message</h2>
                 <p className="text-text-soft text-lg mb-10 relative z-10">Fill out the form below and a member of our team will contact you regarding your inquiry.</p>
                 
-                <form onSubmit={handleSubmit} className="space-y-8 relative z-10">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div>
-                      <label className={labelClass}>Full Name</label>
-                      <input type="text" name="fullName" placeholder="Enter your full name" required onChange={handleChange} className={inputClass} />
-                    </div>
-                    <div>
-                      <label className={labelClass}>Email Address</label>
-                      <input type="email" name="email" placeholder="Enter your email address" required onChange={handleChange} className={inputClass} />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div>
-                      <label className={labelClass}>Phone Number</label>
-                      <input type="tel" name="phone" placeholder="Enter your phone number" required onChange={handleChange} className={inputClass} />
-                    </div>
-                    <div>
-                      <label className={labelClass}>What Are You Interested In?</label>
-                      <select name="interest" required onChange={handleChange} className={inputClass}>
-                        <option value="">Select an option</option>
-                        <option value="Personal Credit Card Stacking">Personal Credit Card Stacking</option>
-                        <option value="Business Credit Card Stacking">Business Credit Card Stacking</option>
-                        <option value="SBA Loan Support">SBA Loan Support</option>
-                        <option value="Business Funding Readiness">Business Funding Readiness</option>
-                        <option value="General Question">General Question</option>
-                        <option value="Not Sure Yet">Not Sure Yet</option>
-                      </select>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className={labelClass}>Message</label>
-                    <textarea name="message" required rows="4" placeholder="Tell us how we can help." onChange={handleChange} className={inputClass + " resize-none"}></textarea>
-                  </div>
-                  
-                  <div className="pt-4 border-t border-border-gray">
-                    <label className="flex items-start gap-4 p-4 bg-bg-light rounded-xl border border-border-gray cursor-pointer group mb-6 transition-colors hover:border-primary-navy/30">
-                      <input type="checkbox" name="consent" required onChange={handleChange} className="w-5 h-5 mt-1 text-primary-navy border-border-gray rounded focus:ring-primary-navy/20 focus:ring-2 transition-all cursor-pointer" />
-                      <span className="text-sm text-text-soft leading-relaxed font-medium">
-                        By submitting this form, I agree to be contacted by Unity Financial Solution by phone, email, and text message regarding my inquiry. Message and data rates may apply. Consent is not a condition of purchase. I may opt out of text messages at any time by replying STOP.
-                      </span>
-                    </label>
-
-                    <button type="submit" className="w-full inline-flex items-center justify-center px-8 py-5 bg-primary-navy text-white font-bold rounded-xl transition-all duration-300 hover:bg-primary-navy/90 hover:shadow-xl text-xl">
-                      Send My Message <Send className="ml-3 w-6 h-6" />
-                    </button>
-                  </div>
-                </form>
+                <div className="relative z-10 w-full">
+                  <iframe 
+                    src="https://api.ahriat.com/widget/form/tpQWlu4EnPYNmizxDywt" 
+                    style={{ width: '100%', height: '648px', border: 'none', borderRadius: '0px' }} 
+                    id="inline-tpQWlu4EnPYNmizxDywt"  
+                    data-layout="{'id':'INLINE'}" 
+                    data-trigger-type="alwaysShow" 
+                    data-trigger-value="" 
+                    data-activation-type="alwaysActivated" 
+                    data-activation-value="" 
+                    data-deactivation-type="neverDeactivate" 
+                    data-deactivation-value="" 
+                    data-form-name="Form 14" 
+                    data-height="648" 
+                    data-layout-iframe-id="inline-tpQWlu4EnPYNmizxDywt" 
+                    data-form-id="tpQWlu4EnPYNmizxDywt" 
+                    title="Form 14" 
+                  />
+                </div>
               </div>
             </FadeUp>
 

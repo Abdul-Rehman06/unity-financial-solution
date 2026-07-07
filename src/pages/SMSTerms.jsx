@@ -109,8 +109,8 @@ const SMSTerms = () => {
               <div className="bg-bg-light p-4 rounded-lg font-mono font-bold text-primary-navy inline-block mb-4">HELP</div>
               <p>You may also contact Unity Financial Solution directly:</p>
               <ul>
-                <li><strong>Email:</strong> [Add Email Address]</li>
-                <li><strong>Phone:</strong> [Add Phone Number]</li>
+                <li><strong>Email:</strong> info@unityfinancialsolution.com</li>
+                <li><strong>Phone:</strong> (858) 239-0594</li>
               </ul>
             </FadeUp>
 
@@ -182,8 +182,8 @@ const SMSTerms = () => {
               <p>For questions about these SMS Terms & Conditions, contact Unity Financial Solution:</p>
               <div className="bg-bg-light p-6 rounded-xl border border-border-gray not-prose mt-4">
                 <p className="font-bold text-primary-navy mb-2">Unity Financial Solution</p>
-                <p className="text-text-soft"><span className="font-semibold text-primary-navy">Email:</span> [Add Email Address]</p>
-                <p className="text-text-soft"><span className="font-semibold text-primary-navy">Phone:</span> [Add Phone Number]</p>
+                <p className="text-text-soft"><span className="font-semibold text-primary-navy">Email:</span> info@unityfinancialsolution.com</p>
+                <p className="text-text-soft"><span className="font-semibold text-primary-navy">Phone:</span> (858) 239-0594</p>
                 <p className="text-text-soft"><span className="font-semibold text-primary-navy">Address:</span> [Add Business Address]</p>
               </div>
             </FadeUp>

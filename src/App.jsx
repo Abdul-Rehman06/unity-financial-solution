@@ -11,6 +11,10 @@ import AboutUs from './pages/AboutUs'
 import FAQ from './pages/FAQ'
 import Contact from './pages/Contact'
 import Results from './pages/Results'
+import Step1MyScoreIQ from './pages/Step1MyScoreIQ'
+import Step2MyScoreIQ from './pages/Step2MyScoreIQ'
+import Step3Application from './pages/Step3Application'
+import ThankYou from './pages/ThankYou'
 
 // Service Pages
 import PersonalCredit from './pages/PersonalCredit'
@@ -37,6 +41,10 @@ function App() {
         <Route path="faq" element={<FAQ />} />
         <Route path="contact" element={<Contact />} />
         <Route path="results" element={<Results />} />
+        <Route path="step-1-myscoreiq" element={<Step1MyScoreIQ />} />
+        <Route path="step-2" element={<Step2MyScoreIQ />} />
+        <Route path="step-3" element={<Step3Application />} />
+        <Route path="thank-you" element={<ThankYou />} />
         
         {/* Service Routes */}
         <Route path="personal-credit-card-stacking" element={<PersonalCredit />} />

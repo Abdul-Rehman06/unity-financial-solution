@@ -145,7 +145,7 @@ export const RefundPolicy = () => {
               <p>Refund requests should be sent to:</p>
               <ul>
                 <li><strong>Email:</strong> [Add Refund Email Address]</li>
-                <li><strong>Phone:</strong> [Add Phone Number]</li>
+                <li><strong>Phone:</strong> (858) 239-0594</li>
               </ul>
               <p>Unity Financial Solution will review refund requests and respond based on the service purchased, work completed, and applicable policy terms.</p>
             </FadeUp>
@@ -277,8 +277,8 @@ export const RefundPolicy = () => {
               <p>For refund or cancellation questions, contact Unity Financial Solution:</p>
               <div className="bg-bg-light p-6 rounded-xl border border-border-gray not-prose mt-4">
                 <p className="font-bold text-primary-navy mb-2">Unity Financial Solution</p>
-                <p className="text-text-soft"><span className="font-semibold text-primary-navy">Email:</span> [Add Email Address]</p>
-                <p className="text-text-soft"><span className="font-semibold text-primary-navy">Phone:</span> [Add Phone Number]</p>
+                <p className="text-text-soft"><span className="font-semibold text-primary-navy">Email:</span> info@unityfinancialsolution.com</p>
+                <p className="text-text-soft"><span className="font-semibold text-primary-navy">Phone:</span> (858) 239-0594</p>
                 <p className="text-text-soft"><span className="font-semibold text-primary-navy">Address:</span> [Add Business Address]</p>
               </div>
             </FadeUp>
@@ -417,8 +417,8 @@ export const ESignConsent = () => {
               <p>Paper copies may be provided at our discretion and may be subject to reasonable processing, printing, or mailing fees where permitted by law.</p>
               <p>To request a paper copy, contact:</p>
               <ul>
-                <li><strong>Email:</strong> [Add Email Address]</li>
-                <li><strong>Phone:</strong> [Add Phone Number]</li>
+                <li><strong>Email:</strong> info@unityfinancialsolution.com</li>
+                <li><strong>Phone:</strong> (858) 239-0594</li>
               </ul>
             </FadeUp>
 
@@ -427,8 +427,8 @@ export const ESignConsent = () => {
               <p>You may withdraw your consent to receive electronic records and communications at any time by contacting Unity Financial Solution.</p>
               <p>To withdraw consent, contact:</p>
               <ul>
-                <li><strong>Email:</strong> [Add Email Address]</li>
-                <li><strong>Phone:</strong> [Add Phone Number]</li>
+                <li><strong>Email:</strong> info@unityfinancialsolution.com</li>
+                <li><strong>Phone:</strong> (858) 239-0594</li>
               </ul>
               <p>Withdrawing consent may affect our ability to provide services, process your funding review, send documents, complete agreements, or communicate with you efficiently.</p>
               <p className="font-bold text-primary-navy">Withdrawal of consent does not affect the legal validity of electronic records or electronic signatures provided before the withdrawal.</p>
@@ -479,8 +479,8 @@ export const ESignConsent = () => {
               <p>For questions about this E-Sign Consent, contact Unity Financial Solution:</p>
               <div className="bg-bg-light p-6 rounded-xl border border-border-gray not-prose mt-4">
                 <p className="font-bold text-primary-navy mb-2">Unity Financial Solution</p>
-                <p className="text-text-soft"><span className="font-semibold text-primary-navy">Email:</span> [Add Email Address]</p>
-                <p className="text-text-soft"><span className="font-semibold text-primary-navy">Phone:</span> [Add Phone Number]</p>
+                <p className="text-text-soft"><span className="font-semibold text-primary-navy">Email:</span> info@unityfinancialsolution.com</p>
+                <p className="text-text-soft"><span className="font-semibold text-primary-navy">Phone:</span> (858) 239-0594</p>
                 <p className="text-text-soft"><span className="font-semibold text-primary-navy">Address:</span> [Add Business Address]</p>
               </div>
             </FadeUp>
