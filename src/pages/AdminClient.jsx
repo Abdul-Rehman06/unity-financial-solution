@@ -82,6 +82,14 @@ export default function AdminClient() {
     };
   }, [client_uuid]);
 
+  if (loading && !client) {
+    return (
+      <div className="min-h-screen bg-bg-light flex items-center justify-center px-6">
+        <div className="text-primary-navy font-heading font-semibold">Verifying secure access…</div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col w-full bg-bg-light min-h-screen">
       <section className="bg-primary-navy pt-36 pb-32 px-6 sm:px-8 text-center relative overflow-hidden flex-shrink-0">
