@@ -62,28 +62,30 @@ export default function AdminLogin() {
 
   return (
     <div className="flex flex-col w-full bg-bg-light min-h-screen">
-      <section className="bg-primary-navy pt-36 pb-36 px-6 sm:px-8 text-center relative overflow-hidden flex-shrink-0">
+      <section className="bg-primary-navy pt-36 pb-32 px-6 sm:px-8 text-center relative overflow-hidden flex-shrink-0">
         <div className="absolute inset-0 opacity-40 mix-blend-multiply pointer-events-none">
           <MeshGradient speed={6} intensity={1.2} grain={0.3} />
         </div>
 
         <div className="max-w-5xl mx-auto relative z-10">
-          <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/15 rounded-full px-6 py-2 mb-10">
-            <ShieldCheck className="w-4 h-4 text-accent-gold" />
-            <span className="text-accent-gold font-bold tracking-widest text-sm uppercase">Admin Access</span>
+          <div className="flex items-center justify-center mb-10">
+            <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/15 rounded-full px-6 py-2">
+              <ShieldCheck className="w-4 h-4 text-accent-gold" />
+              <span className="text-accent-gold font-bold tracking-widest text-sm uppercase">Admin Access</span>
+            </div>
           </div>
 
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold text-white mb-6 leading-tight">
             Secure Dashboard Login
           </h1>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed mb-14">
             Sign in to review client files, download documents, and export submissions.
           </p>
         </div>
       </section>
 
-      <section className="px-6 sm:px-8 -mt-20 pb-24 flex-grow flex flex-col items-center w-full">
-        <div className="w-full max-w-xl mx-auto bg-white p-8 sm:p-10 md:p-12 rounded-[2rem] shadow-xl border border-border-gray">
+      <section className="px-6 sm:px-8 -mt-20 pb-24 flex-grow flex flex-col items-center">
+        <div className="w-full max-w-xl mx-auto bg-white p-8 sm:p-10 md:p-12 rounded-[2rem] shadow-xl border border-border-gray relative overflow-hidden">
           {error ? (
             <div className="mb-8 bg-red-50 border-l-4 border-red-500 p-6 rounded-r-xl">
               <p className="text-red-700 font-medium">{error}</p>
