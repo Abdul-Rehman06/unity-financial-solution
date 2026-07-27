@@ -1,9 +1,11 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Download, FileText, ShieldCheck } from 'lucide-react';
+import { Download, FileText, ShieldCheck, Printer } from 'lucide-react';
 import MeshGradient from '../components/ui/mesh-gradient-shader';
 import Button from '../components/Button';
 import { adminDownloadUrl, adminExportClientZipUrl, adminMe, fetchClient } from '../lib/adminApi';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 
 function fmtDate(v) {
   if (!v) return '';
@@ -28,8 +30,31 @@ export default function AdminClient() {
   const [error, setError] = useState('');
   const [client, setClient] = useState(null);
   const [docs, setDocs] = useState([]);
+  const [pdfGenerating, setPdfGenerating] = useState(false);
+  const contractRef = useRef(null);
 
   const zipUrl = useMemo(() => adminExportClientZipUrl(client_uuid), [client_uuid]);
+
+  const downloadContractPDF = async () => {
+    if (!contractRef.current) return;
+    setPdfGenerating(true);
+    try {
+      const canvas = await html2canvas(contractRef.current, { scale: 2, useCORS: true });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`${client?.first_name || 'Client'}_${client?.last_name || 'POA'}.pdf`);
+    } catch (e) {
+      console.error(e);
+      alert('Failed to generate PDF');
+    } finally {
+      setPdfGenerating(false);
+    }
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -174,6 +199,79 @@ export default function AdminClient() {
                     ))}
                   </div>
                 )}
+              </div>
+
+              <div className="bg-white rounded-[2rem] shadow-xl border border-border-gray p-8 mt-8">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-6">
+                  <h2 className="text-2xl font-heading font-bold text-primary-navy">Power of Attorney Agreement</h2>
+                  <button
+                    onClick={downloadContractPDF}
+                    disabled={pdfGenerating}
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-accent-gold to-[#B38A36] text-white font-heading font-semibold hover:shadow-lg transition-all shrink-0 disabled:opacity-50"
+                  >
+                    <Printer className="w-5 h-5" />
+                    {pdfGenerating ? 'Generating...' : 'Export PDF'}
+                  </button>
+                </div>
+
+                <div className="rounded-2xl border border-border-gray bg-bg-light p-8 overflow-hidden relative">
+                  <div ref={contractRef} className="bg-white p-10 text-sm text-primary-navy leading-relaxed max-w-4xl mx-auto shadow-sm border border-border-gray">
+                    <h3 className="text-xl font-bold text-center mb-6">POWER OF ATTORNEY</h3>
+                    <p className="mb-4">
+                      I, <strong>{client.first_name} {client.last_name}</strong>, hereby appoint The Siegel Professional Group LLC of 8403 Colesville Rd, Suite 1100, Silver Spring, MD 20902 as my attorney-in-fact (“Agent”) to exercise the powers and discretions described below.
+                    </p>
+                    <p className="mb-4">I hereby revoke any and all general powers of attorney and special powers of attorney that previously have been signed by me.</p>
+                    <p className="mb-4">However, the preceding sentence shall not have the effect of revoking any powers of attorney that are directly related to my health care that previously have been signed by me.</p>
+                    <p className="mb-4">
+                      My Agent shall have full power and authority to act on my behalf. This power and authority shall authorize my Agent to manage and conduct all of my affairs and to exercise all of my legal rights and powers, including all rights and powers that I may acquire in the future. My Agent’s powers shall include, but not be limited to, the power to:
+                    </p>
+                    <p className="mb-4">1. Conduct any and all banking transactions, including opening or closing any type of account with any financial institution.</p>
+                    <p className="mb-4">
+                      This Power of Attorney shall be construed broadly as a General Power of Attorney. The listing of specific powers is not intended to limit or restrict the general powers granted in this Power of Attorney in any manner.
+                    </p>
+                    <p className="mb-4">
+                      Any power or authority granted to my Agent under this document shall be limited to the extent necessary to prevent this Power of Attorney from causing, (i) my income to be taxable to my Agent, (ii) my assets to be subject to a general power of appointment by my Agent, or (iii) my Agent to have any incidents of ownership with respect to any life insurance policies that I may own on the life of my Agent.
+                    </p>
+                    <p className="mb-4">
+                      My Agent shall not be liable for any loss that results from a judgment error that was made in good faith. However, my Agent shall be liable for willful misconduct or the failure to act in good faith while acting under the authority of this Power of Attorney. A Successor Agent shall not be liable for acts of a prior Agent.
+                    </p>
+                    <p className="mb-4">
+                      No person who relies in good faith on the authority of my Agent under this instrument shall incur any liability to me, my estate or my personal representative. I authorize my Agent to indemnify and hold harmless any third party who accepts and acts under this document.
+                    </p>
+                    <p className="mb-4">
+                      If any part of any provision of this instrument shall be invalid or unenforceable under applicable law, such part shall be ineffective to the extent of such invalidity only, without in any way affecting the remaining parts of such provision or the remaining provisions of this instrument.
+                    </p>
+                    <p className="mb-4">
+                      My Agent shall be entitled to reasonable compensation for any services provided as my Agent as specified in my client agreement. My Agent shall be entitled to reimbursement of all reasonable expenses incurred as a result of carrying out any provision of this Power of Attorney.
+                    </p>
+                    <p className="mb-4">
+                      My Agent shall provide an accounting for all funds handled and all acts performed as my Agent as required under state law or upon my request or the request of any authorized personal representative, fiduciary or court of record acting on my behalf.
+                    </p>
+                    <p className="mb-4">
+                      This Power of Attorney shall become effective immediately, and shall not be affected by my disability or lack of mental competence, except as may be provided otherwise by an applicable state statute. This is a Durable Power of Attorney. This Power of Attorney shall continue effective until my death or until sixty (60) days after issuance of final payment receipt, whichever comes first. This Power of Attorney may be revoked by me at any time by providing written notice to my Agent.
+                    </p>
+                    <div className="mt-10 pt-8 border-t border-border-gray">
+                      <div className="grid grid-cols-2 gap-8">
+                        <div>
+                          <div className="text-xs font-bold text-text-soft uppercase mb-2">Signature</div>
+                          {client.signature ? (
+                            <img src={client.signature} alt="Client Signature" className="h-20 object-contain mix-blend-multiply" />
+                          ) : (
+                            <div className="h-20 flex items-center text-text-soft italic">No signature provided</div>
+                          )}
+                          <div className="border-t border-black mt-2 pt-2 text-sm font-semibold">{client.first_name} {client.last_name}</div>
+                        </div>
+                        <div>
+                          <div className="text-xs font-bold text-text-soft uppercase mb-2">Date Signed</div>
+                          <div className="h-20 flex items-end pb-2">
+                            <span className="text-lg">{new Date(client.submitted_at || client.created_at).toLocaleDateString()}</span>
+                          </div>
+                          <div className="border-t border-black mt-2 pt-2 text-sm font-semibold">Date</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </>
           ) : (
