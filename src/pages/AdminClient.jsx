@@ -59,7 +59,7 @@ export default function AdminClient() {
 
   return (
     <div className="flex flex-col w-full bg-bg-light min-h-screen">
-      <section className="bg-primary-navy pt-32 pb-36 px-6 sm:px-8 relative overflow-hidden">
+      <section className="bg-primary-navy pt-32 pb-36 px-6 sm:px-8 relative overflow-hidden flex-shrink-0">
         <div className="absolute inset-0 opacity-40 mix-blend-multiply pointer-events-none">
           <MeshGradient speed={6} intensity={1.2} grain={0.3} />
         </div>
@@ -94,8 +94,8 @@ export default function AdminClient() {
         </div>
       </section>
 
-      <section className="px-6 sm:px-8 -mt-16 pb-24">
-        <div className="max-w-7xl mx-auto">
+      <section className="px-6 sm:px-8 -mt-16 pb-24 flex-grow flex flex-col items-center w-full">
+        <div className="w-full max-w-7xl mx-auto">
           {error ? (
             <div className="bg-white rounded-[2rem] shadow-xl border border-border-gray p-8 mb-8">
               <div className="bg-red-50 border-l-4 border-red-500 p-6 rounded-r-xl">

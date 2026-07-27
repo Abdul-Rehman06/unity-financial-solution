@@ -61,7 +61,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="flex flex-col w-full bg-bg-light min-h-screen">
-      <section className="bg-primary-navy pt-32 pb-36 px-6 sm:px-8 relative overflow-hidden">
+      <section className="bg-primary-navy pt-32 pb-36 px-6 sm:px-8 relative overflow-hidden flex-shrink-0">
         <div className="absolute inset-0 opacity-40 mix-blend-multiply pointer-events-none">
           <MeshGradient speed={6} intensity={1.2} grain={0.3} />
         </div>
@@ -98,8 +98,8 @@ export default function AdminDashboard() {
         </div>
       </section>
 
-      <section className="px-6 sm:px-8 -mt-16 pb-24">
-        <div className="max-w-7xl mx-auto bg-white rounded-[2rem] shadow-xl border border-border-gray overflow-hidden">
+      <section className="px-6 sm:px-8 -mt-16 pb-24 flex-grow flex flex-col items-center w-full">
+        <div className="w-full max-w-7xl mx-auto bg-white rounded-[2rem] shadow-xl border border-border-gray overflow-hidden">
           <div className="p-6 sm:p-8 border-b border-border-gray bg-white">
             <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:justify-between">
               <div className="flex items-center gap-3">

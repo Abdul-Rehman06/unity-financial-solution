@@ -62,7 +62,7 @@ export default function AdminLogin() {
 
   return (
     <div className="flex flex-col w-full bg-bg-light min-h-screen">
-      <section className="bg-primary-navy pt-36 pb-36 px-6 sm:px-8 text-center relative overflow-hidden">
+      <section className="bg-primary-navy pt-36 pb-36 px-6 sm:px-8 text-center relative overflow-hidden flex-shrink-0">
         <div className="absolute inset-0 opacity-40 mix-blend-multiply pointer-events-none">
           <MeshGradient speed={6} intensity={1.2} grain={0.3} />
         </div>
@@ -82,8 +82,8 @@ export default function AdminLogin() {
         </div>
       </section>
 
-      <section className="px-6 sm:px-8 -mt-20 pb-24">
-        <div className="max-w-xl mx-auto bg-white p-8 sm:p-10 md:p-12 rounded-[2rem] shadow-xl border border-border-gray">
+      <section className="px-6 sm:px-8 -mt-20 pb-24 flex-grow flex flex-col items-center w-full">
+        <div className="w-full max-w-xl mx-auto bg-white p-8 sm:p-10 md:p-12 rounded-[2rem] shadow-xl border border-border-gray">
           {error ? (
             <div className="mb-8 bg-red-50 border-l-4 border-red-500 p-6 rounded-r-xl">
               <p className="text-red-700 font-medium">{error}</p>
