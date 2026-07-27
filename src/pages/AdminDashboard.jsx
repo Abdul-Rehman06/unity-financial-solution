@@ -98,7 +98,7 @@ export default function AdminDashboard() {
       </section>
 
       <section className="px-6 sm:px-8 -mt-20 pb-24 flex-grow flex flex-col items-center">
-        <div className="w-full max-w-7xl mx-auto bg-white rounded-[2rem] shadow-xl border border-border-gray relative overflow-hidden">
+        <div className="w-full max-w-7xl mx-auto bg-white rounded-[2rem] shadow-xl border border-border-gray relative z-20 overflow-hidden">
           <div className="p-6 sm:p-8 border-b border-border-gray bg-white">
             <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:justify-between">
               <div className="flex items-center gap-3">

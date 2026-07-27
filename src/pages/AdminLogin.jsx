@@ -85,7 +85,7 @@ export default function AdminLogin() {
       </section>
 
       <section className="px-6 sm:px-8 -mt-20 pb-24 flex-grow flex flex-col items-center">
-        <div className="w-full max-w-xl mx-auto bg-white p-8 sm:p-10 md:p-12 rounded-[2rem] shadow-xl border border-border-gray relative overflow-hidden">
+        <div className="w-full max-w-xl mx-auto bg-white p-8 sm:p-10 md:p-12 rounded-[2rem] shadow-xl border border-border-gray relative z-20 overflow-hidden">
           {error ? (
             <div className="mb-8 bg-red-50 border-l-4 border-red-500 p-6 rounded-r-xl">
               <p className="text-red-700 font-medium">{error}</p>
