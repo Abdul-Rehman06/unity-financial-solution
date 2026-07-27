@@ -16,6 +16,10 @@ import Step2MyScoreIQ from './pages/Step2MyScoreIQ'
 import Step3Application from './pages/Step3Application'
 import ThankYou from './pages/ThankYou'
 import NotFound from './pages/NotFound'
+import SecureUploadPortal from './pages/SecureUploadPortal'
+import AdminLogin from './pages/AdminLogin'
+import AdminDashboard from './pages/AdminDashboard'
+import AdminClient from './pages/AdminClient'
 
 // Service Pages
 import PersonalCredit from './pages/PersonalCredit'
@@ -46,6 +50,10 @@ function App() {
         <Route path="step-2" element={<Step2MyScoreIQ />} />
         <Route path="step-3" element={<Step3Application />} />
         <Route path="thank-you" element={<ThankYou />} />
+        <Route path="secure-upload-portal" element={<SecureUploadPortal />} />
+        <Route path="admin/login" element={<AdminLogin />} />
+        <Route path="admin" element={<AdminDashboard />} />
+        <Route path="admin/clients/:client_uuid" element={<AdminClient />} />
         
         {/* Service Routes */}
         <Route path="personal-credit-card-stacking" element={<PersonalCredit />} />
