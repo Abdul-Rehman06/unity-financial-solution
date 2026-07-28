@@ -1,15 +1,23 @@
 <?php
 
-function portal_config() {
-    $dbHost = getenv('PORTAL_DB_HOST') ?: 'localhost';
-    $dbName = getenv('PORTAL_DB_NAME') ?: 'unity_financial_solution';
-    $dbUser = getenv('PORTAL_DB_USER') ?: 'root';
-    $dbPass = getenv('PORTAL_DB_PASS') ?: '';
-    $encryptionKey = getenv('PORTAL_ENCRYPTION_KEY') ?: 'change-this-key';
-    $adminUser = getenv('PORTAL_ADMIN_USER') ?: 'admin';
-    $adminPassHash = getenv('PORTAL_ADMIN_PASSWORD_HASH') ?: '$2y$10$WaGq1x2QqOnA6MZQH1sJw.MkuJyyBJyJtPfRUn..DsPjvfwO/rPTa';
+function portal_env($key, $fallback = null) {
+    $v = getenv($key);
+    if ($v !== false && $v !== null && $v !== '') return $v;
+    if (isset($_SERVER[$key]) && $_SERVER[$key] !== '') return $_SERVER[$key];
+    if (isset($_ENV[$key]) && $_ENV[$key] !== '') return $_ENV[$key];
+    return $fallback;
+}
 
-    $uploadBase = getenv('PORTAL_UPLOAD_BASE');
+function portal_config() {
+    $dbHost = portal_env('PORTAL_DB_HOST', 'localhost');
+    $dbName = portal_env('PORTAL_DB_NAME', 'unity_financial_solution');
+    $dbUser = portal_env('PORTAL_DB_USER', 'root');
+    $dbPass = portal_env('PORTAL_DB_PASS', '');
+    $encryptionKey = portal_env('PORTAL_ENCRYPTION_KEY', 'change-this-key');
+    $adminUser = portal_env('PORTAL_ADMIN_USER', 'admin');
+    $adminPassHash = portal_env('PORTAL_ADMIN_PASSWORD_HASH', '$2y$10$WaGq1x2QqOnA6MZQH1sJw.MkuJyyBJyJtPfRUn..DsPjvfwO/rPTa');
+
+    $uploadBase = portal_env('PORTAL_UPLOAD_BASE', null);
     if (!$uploadBase) {
         $uploadBase = realpath(__DIR__ . '/../uploads');
         if (!$uploadBase) {

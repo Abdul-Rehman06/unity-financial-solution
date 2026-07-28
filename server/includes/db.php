@@ -12,6 +12,7 @@ function portal_db($config) {
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         ]);
     } catch (Throwable $e) {
+        error_log('[portal_db] ' . $e->getMessage());
         portal_json_error('Database connection failed.', 500);
     }
 
@@ -59,4 +60,3 @@ function portal_db_migrate($pdo) {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     ");
 }
-
