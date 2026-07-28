@@ -1,4 +1,4 @@
-const API_BASE = import.meta?.env?.VITE_PORTAL_API_BASE || '/api';
+const API_BASE = import.meta?.env?.VITE_PORTAL_API_BASE || '/server/api';
 
 const jsonHeaders = {
   Accept: 'application/json',
@@ -23,7 +23,14 @@ export const portalSession = {
 };
 
 async function parseJsonResponse(res) {
+  const contentType = res.headers.get('content-type') || '';
   const text = await res.text();
+  if (!contentType.includes('application/json')) {
+    const msg = !res.ok
+      ? `Request failed (${res.status})`
+      : 'Invalid API response (expected JSON). Check that the API base path points to /server/api.';
+    throw new Error(msg);
+  }
   let data = null;
   try {
     data = text ? JSON.parse(text) : null;
@@ -103,4 +110,3 @@ export async function uploadDocument({ client_uuid, type, file }) {
 export async function submitPortal(payload) {
   return postJson('/submit.php', payload);
 }
-
