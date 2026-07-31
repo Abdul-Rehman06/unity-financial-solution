@@ -1,4 +1,7 @@
-const API_BASE = import.meta?.env?.VITE_PORTAL_API_BASE || '/server/api';
+const baseUrl = import.meta?.env?.BASE_URL || '/';
+const normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+const defaultApiBase = `${normalizedBaseUrl}/server/api`;
+const API_BASE = import.meta?.env?.VITE_PORTAL_API_BASE || defaultApiBase;
 
 const jsonHeaders = {
   Accept: 'application/json',
@@ -28,7 +31,7 @@ async function parseJsonResponse(res) {
   if (!contentType.includes('application/json')) {
     const msg = !res.ok
       ? `Request failed (${res.status})`
-      : 'Invalid API response (expected JSON). Check that the API base path points to /server/api.';
+      : 'Invalid API response (expected JSON). Check that the API base path points to /server/api (or your site subfolder + /server/api).';
     throw new Error(msg);
   }
   let data = null;

@@ -61,6 +61,68 @@ function sizeOk(file) {
   return file.size <= maxBytes;
 }
 
+function parseLabeledBlock(text) {
+  const out = {};
+  const raw = (text || '').split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  for (const line of raw) {
+    const idx = line.indexOf(':');
+    if (idx === -1) continue;
+    const key = line.slice(0, idx).trim().toLowerCase();
+    const value = line.slice(idx + 1).trim();
+    if (key) out[key] = value;
+  }
+  return out;
+}
+
+function packLabeledBlock(pairs) {
+  return pairs
+    .filter((p) => (p?.value || '').trim() !== '')
+    .map((p) => `${p.label}: ${(p.value || '').trim()}`)
+    .join('\n');
+}
+
+function packExperian(fields) {
+  return packLabeledBlock([
+    { label: 'Username', value: fields.experian_username },
+    { label: 'Password', value: fields.experian_password },
+    { label: 'Security Question', value: fields.experian_question },
+    { label: 'Security Answer', value: fields.experian_answer },
+  ]);
+}
+
+function packMyFreeScore(fields) {
+  return packLabeledBlock([
+    { label: 'Username/Email', value: fields.myfreescore_username },
+    { label: 'Password', value: fields.myfreescore_password },
+  ]);
+}
+
+function packNav(fields) {
+  return packLabeledBlock([
+    { label: 'Username/Email', value: fields.nav_username },
+    { label: 'Password', value: fields.nav_password },
+  ]);
+}
+
+function parseNominatimAddress(item) {
+  const addr = item?.address || {};
+  const street = `${addr.house_number ? `${addr.house_number} ` : ''}${addr.road || ''}`.trim();
+  const city = (addr.city || addr.town || addr.village || addr.hamlet || addr.county || '').trim();
+  const state = (addr.state || addr.state_code || '').trim();
+  const zip = (addr.postcode || '').trim();
+  return { street, city, state, zip };
+}
+
+function buildNominatimSearchUrl(query) {
+  const params = new URLSearchParams({
+    format: 'jsonv2',
+    addressdetails: '1',
+    limit: '6',
+    q: query,
+  });
+  return `https://nominatim.openstreetmap.org/search?${params.toString()}`;
+}
+
 function UploadCard({ title, subtitle, accepted, value, onPick }) {
   const inputRef = useRef(null);
   const [drag, setDrag] = useState(false);
@@ -259,10 +321,26 @@ function SignaturePad({ value, onChange }) {
 export default function SecureUploadPortal() {
   const navigate = useNavigate();
   const existingSession = useMemo(() => portalSession.get(), []);
+  const existingExperianMap = useMemo(() => parseLabeledBlock(existingSession?.experian || ''), []);
+  const existingMyFreeScoreMap = useMemo(() => parseLabeledBlock(existingSession?.myfreescore || ''), []);
+  const existingNavMap = useMemo(() => parseLabeledBlock(existingSession?.nav || ''), []);
   const [step, setStep] = useState(() => clampStep(existingSession?.step ?? 0));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [clientUuid, setClientUuid] = useState(() => existingSession?.client_uuid || '');
+  const [skips, setSkips] = useState(() => ({
+    experian: Boolean(existingSession?.skips?.experian),
+    myfreescore: Boolean(existingSession?.skips?.myfreescore),
+    nav: Boolean(existingSession?.skips?.nav),
+    ein: Boolean(existingSession?.skips?.ein),
+    articles: Boolean(existingSession?.skips?.articles),
+  }));
+  const [addressOpen, setAddressOpen] = useState(false);
+  const [addressLoading, setAddressLoading] = useState(false);
+  const [addressResults, setAddressResults] = useState([]);
+  const [addressCandidate, setAddressCandidate] = useState(null);
+  const addressAbortRef = useRef(null);
+  const addressDebounceRef = useRef(0);
 
   const [form, setForm] = useState(() => ({
     first_name: existingSession?.first_name || '',
@@ -275,8 +353,16 @@ export default function SecureUploadPortal() {
     phone: existingSession?.phone || '',
     email: existingSession?.email || '',
     experian: existingSession?.experian || '',
+    experian_username: existingSession?.experian_username || existingExperianMap.username || '',
+    experian_password: existingSession?.experian_password || existingExperianMap.password || '',
+    experian_question: existingSession?.experian_question || existingExperianMap['security question'] || '',
+    experian_answer: existingSession?.experian_answer || existingExperianMap['security answer'] || '',
     myfreescore: existingSession?.myfreescore || '',
+    myfreescore_username: existingSession?.myfreescore_username || existingMyFreeScoreMap['username/email'] || existingMyFreeScoreMap.username || '',
+    myfreescore_password: existingSession?.myfreescore_password || existingMyFreeScoreMap.password || '',
     nav: existingSession?.nav || '',
+    nav_username: existingSession?.nav_username || existingNavMap['username/email'] || existingNavMap.username || '',
+    nav_password: existingSession?.nav_password || existingNavMap.password || '',
     referral: existingSession?.referral || '',
     signature: existingSession?.signature || '',
   }));
@@ -298,6 +384,7 @@ export default function SecureUploadPortal() {
       client_uuid: clientUuid,
       ...form,
       uploads,
+      skips,
       step: next,
     };
     portalSession.set(session);
@@ -309,6 +396,69 @@ export default function SecureUploadPortal() {
 
   const onField = (key) => (e) => setForm((p) => ({ ...p, [key]: e.target.value }));
 
+  const setExperianField = (key) => (e) => {
+    const value = e.target.value;
+    setSkips((p) => ({ ...p, experian: false }));
+    setForm((p) => {
+      const next = { ...p, [key]: value };
+      next.experian = packExperian(next);
+      return next;
+    });
+  };
+
+  const setMyFreeScoreField = (key) => (e) => {
+    const value = e.target.value;
+    setSkips((p) => ({ ...p, myfreescore: false }));
+    setForm((p) => {
+      const next = { ...p, [key]: value };
+      next.myfreescore = packMyFreeScore(next);
+      return next;
+    });
+  };
+
+  const setNavField = (key) => (e) => {
+    const value = e.target.value;
+    setSkips((p) => ({ ...p, nav: false }));
+    setForm((p) => {
+      const next = { ...p, [key]: value };
+      next.nav = packNav(next);
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    if (step !== 2 || !addressOpen) return;
+    const q = (form.street || '').trim();
+    if (q.length < 3) {
+      if (addressAbortRef.current) addressAbortRef.current.abort();
+      setAddressResults([]);
+      setAddressLoading(false);
+      return;
+    }
+
+    window.clearTimeout(addressDebounceRef.current);
+    addressDebounceRef.current = window.setTimeout(async () => {
+      if (addressAbortRef.current) addressAbortRef.current.abort();
+      const controller = new AbortController();
+      addressAbortRef.current = controller;
+      setAddressLoading(true);
+      try {
+        const res = await fetch(buildNominatimSearchUrl(q), {
+          headers: { Accept: 'application/json' },
+          signal: controller.signal,
+        });
+        const data = await res.json();
+        setAddressResults(Array.isArray(data) ? data : []);
+      } catch (e) {
+        if (e?.name !== 'AbortError') setAddressResults([]);
+      } finally {
+        setAddressLoading(false);
+      }
+    }, 350);
+
+    return () => window.clearTimeout(addressDebounceRef.current);
+  }, [form.street, step, addressOpen]);
+
   const validateStep = () => {
     if (step === 1) return Boolean(form.first_name.trim() && form.last_name.trim());
     if (step === 2) return Boolean(form.street.trim() && form.city.trim() && form.state.trim() && form.zip.trim());
@@ -317,8 +467,8 @@ export default function SecureUploadPortal() {
     if (step === 8) return Boolean(uploads.government_id);
     if (step === 9) return Boolean(uploads.ss_card);
     if (step === 10) return Boolean(uploads.address_verification);
-    if (step === 11) return Boolean(uploads.ein);
-    if (step === 12) return Boolean(uploads.articles);
+    if (step === 11) return Boolean(uploads.ein || skips.ein);
+    if (step === 12) return Boolean(uploads.articles || skips.articles);
     if (step === 15) return Boolean(form.signature);
     return true;
   };
@@ -341,6 +491,7 @@ export default function SecureUploadPortal() {
     try {
       const res = await uploadDocument({ client_uuid: clientUuid, type, file });
       setUploads((p) => ({ ...p, [type]: res?.filename || file.name }));
+      if (type === 'ein' || type === 'articles') setSkips((p) => ({ ...p, [type]: false }));
       const session = portalSession.get() || {};
       portalSession.set({ ...session, uploads: { ...(session.uploads || {}), [type]: res?.filename || file.name } });
     } catch (e) {
@@ -353,7 +504,6 @@ export default function SecureUploadPortal() {
   const go = (next) => {
     const s = clampStep(next);
     setStep(s);
-    persist(s);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -403,15 +553,15 @@ export default function SecureUploadPortal() {
       }
 
       if (step === 5) {
-        await saveExperian({ client_uuid: clientUuid, experian: form.experian });
+        await saveExperian({ client_uuid: clientUuid, experian: skips.experian ? '' : packExperian(form) });
       }
 
       if (step === 6) {
-        await saveMyFreeScore({ client_uuid: clientUuid, myfreescore: form.myfreescore });
+        await saveMyFreeScore({ client_uuid: clientUuid, myfreescore: skips.myfreescore ? '' : packMyFreeScore(form) });
       }
 
       if (step === 7) {
-        await saveNav({ client_uuid: clientUuid, nav: form.nav });
+        await saveNav({ client_uuid: clientUuid, nav: skips.nav ? '' : packNav(form) });
       }
 
       if (step === 14) {
@@ -526,8 +676,107 @@ export default function SecureUploadPortal() {
             <div className="space-y-8">
               <div>
                 <label className={labelClass}>Street Address</label>
-                <input value={form.street} onChange={onField('street')} className={inputClass} placeholder="Street address" />
+                <div className="relative">
+                  <input
+                    value={form.street}
+                    onChange={(e) => {
+                      setAddressCandidate(null);
+                      setForm((p) => ({ ...p, street: e.target.value }));
+                      setAddressOpen(true);
+                    }}
+                    onFocus={() => setAddressOpen(true)}
+                    onBlur={() => window.setTimeout(() => setAddressOpen(false), 150)}
+                    className={inputClass}
+                    placeholder="Start typing your address"
+                    autoComplete="street-address"
+                  />
+
+                  {addressOpen && (addressLoading || addressResults.length) ? (
+                    <div className="absolute z-30 mt-2 w-full rounded-2xl border border-border-gray bg-white shadow-xl overflow-hidden">
+                      {addressLoading ? (
+                        <div className="px-5 py-4 text-sm text-text-soft">Searching addresses…</div>
+                      ) : null}
+                      {!addressLoading && addressResults.length ? (
+                        <div className="max-h-72 overflow-y-auto">
+                          {addressResults.map((r) => (
+                            <button
+                              key={`${r.place_id}`}
+                              type="button"
+                              onMouseDown={(e) => e.preventDefault()}
+                              onClick={() => {
+                                const parsed = parseNominatimAddress(r);
+                                setAddressCandidate({ raw: r, parsed });
+                                setAddressOpen(false);
+                              }}
+                              className="w-full text-left px-5 py-4 border-t border-border-gray first:border-t-0 hover:bg-bg-light transition-colors"
+                            >
+                              <div className="text-sm font-semibold text-primary-navy">{r.display_name}</div>
+                              <div className="text-xs text-text-soft mt-1">Click to review & apply</div>
+                            </button>
+                          ))}
+                        </div>
+                      ) : null}
+                      {!addressLoading && !addressResults.length ? (
+                        <div className="px-5 py-4 text-sm text-text-soft">No suggestions found.</div>
+                      ) : null}
+                      <div className="px-5 py-3 border-t border-border-gray bg-bg-light text-xs text-text-soft">
+                        Suggestions by OpenStreetMap
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
               </div>
+
+              {addressCandidate ? (
+                <div className="rounded-2xl border border-border-gray bg-bg-light p-6">
+                  <div className="text-sm font-semibold text-primary-navy mb-4">Use this suggested address?</div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div className="rounded-xl border border-border-gray bg-white p-4">
+                      <div className="text-xs font-bold tracking-widest uppercase text-primary-green mb-2">Street</div>
+                      <div className="text-primary-navy font-semibold">{addressCandidate.parsed.street || '—'}</div>
+                    </div>
+                    <div className="rounded-xl border border-border-gray bg-white p-4">
+                      <div className="text-xs font-bold tracking-widest uppercase text-primary-green mb-2">City</div>
+                      <div className="text-primary-navy font-semibold">{addressCandidate.parsed.city || '—'}</div>
+                    </div>
+                    <div className="rounded-xl border border-border-gray bg-white p-4">
+                      <div className="text-xs font-bold tracking-widest uppercase text-primary-green mb-2">State / ZIP</div>
+                      <div className="text-primary-navy font-semibold">
+                        {[addressCandidate.parsed.state, addressCandidate.parsed.zip].filter(Boolean).join(' ') || '—'}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-5 flex flex-col sm:flex-row gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const { street, city, state, zip } = addressCandidate.parsed;
+                        setForm((p) => ({
+                          ...p,
+                          street: street || p.street,
+                          city: city || p.city,
+                          state: state || p.state,
+                          zip: zip || p.zip,
+                        }));
+                        setAddressCandidate(null);
+                        setAddressResults([]);
+                        setAddressOpen(false);
+                      }}
+                      className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-primary-navy text-white font-heading font-semibold transition-all hover:bg-primary-navy/90 hover:shadow-[0_10px_24px_rgba(13,27,61,0.25)]"
+                    >
+                      Apply Address
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAddressCandidate(null)}
+                      className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-white text-primary-navy font-heading font-semibold border border-border-gray transition-all hover:border-primary-navy/30 hover:shadow-[0_8px_30px_rgba(0,0,0,0.05)]"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+
               <div>
                 <label className={labelClass}>Address Line 2</label>
                 <input value={form.street2} onChange={onField('street2')} className={inputClass} placeholder="Apt, suite, etc. (optional)" />
@@ -565,16 +814,70 @@ export default function SecureUploadPortal() {
 
           {step === 5 ? (
             <div className="space-y-6">
-              <div className="text-text-soft">
-                Enter your Experian account details in the format below:
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="text-text-soft">Experian account details (optional).</div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSkips((p) => ({ ...p, experian: true }));
+                    setForm((p) => ({
+                      ...p,
+                      experian: '',
+                      experian_username: '',
+                      experian_password: '',
+                      experian_question: '',
+                      experian_answer: '',
+                    }));
+                    go(6);
+                  }}
+                  className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-white text-primary-navy font-heading font-semibold border border-border-gray transition-all hover:border-primary-navy/30 hover:shadow-[0_8px_30px_rgba(0,0,0,0.05)]"
+                >
+                  Skip
+                </button>
               </div>
-              <textarea
-                value={form.experian}
-                onChange={onField('experian')}
-                rows={8}
-                className={`${inputClass} resize-none`}
-                placeholder={`Username:\nPassword:\nSecurity Question:\nSecurity Answer:`}
-              />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                  <label className={labelClass}>Username</label>
+                  <input
+                    value={form.experian_username}
+                    onChange={setExperianField('experian_username')}
+                    className={inputClass}
+                    placeholder="Enter username"
+                    autoComplete="username"
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Password</label>
+                  <input
+                    value={form.experian_password}
+                    onChange={setExperianField('experian_password')}
+                    className={inputClass}
+                    placeholder="Enter password"
+                    type="password"
+                    autoComplete="current-password"
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Security Question</label>
+                  <input
+                    value={form.experian_question}
+                    onChange={setExperianField('experian_question')}
+                    className={inputClass}
+                    placeholder="Security question"
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Security Answer</label>
+                  <input
+                    value={form.experian_answer}
+                    onChange={setExperianField('experian_answer')}
+                    className={inputClass}
+                    placeholder="Security answer"
+                  />
+                </div>
+              </div>
+
               <div className="bg-red-50 border-l-4 border-red-500 p-6 rounded-r-xl">
                 <p className="text-red-700 font-medium">
                   Do not submit passwords or unnecessary sensitive information anywhere else in the portal. Only submit what is requested.
@@ -585,27 +888,87 @@ export default function SecureUploadPortal() {
 
           {step === 6 ? (
             <div className="space-y-6">
-              <div className="text-text-soft">Paste any required MyFreeScoreNow details below.</div>
-              <textarea
-                value={form.myfreescore}
-                onChange={onField('myfreescore')}
-                rows={8}
-                className={`${inputClass} resize-none`}
-                placeholder="Enter MyFreeScoreNow information here"
-              />
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="text-text-soft">MyFreeScoreNow details (optional).</div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSkips((p) => ({ ...p, myfreescore: true }));
+                    setForm((p) => ({ ...p, myfreescore: '', myfreescore_username: '', myfreescore_password: '' }));
+                    go(7);
+                  }}
+                  className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-white text-primary-navy font-heading font-semibold border border-border-gray transition-all hover:border-primary-navy/30 hover:shadow-[0_8px_30px_rgba(0,0,0,0.05)]"
+                >
+                  Skip
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                  <label className={labelClass}>Username / Email</label>
+                  <input
+                    value={form.myfreescore_username}
+                    onChange={setMyFreeScoreField('myfreescore_username')}
+                    className={inputClass}
+                    placeholder="Enter username or email"
+                    autoComplete="username"
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Password</label>
+                  <input
+                    value={form.myfreescore_password}
+                    onChange={setMyFreeScoreField('myfreescore_password')}
+                    className={inputClass}
+                    placeholder="Enter password"
+                    type="password"
+                    autoComplete="current-password"
+                  />
+                </div>
+              </div>
             </div>
           ) : null}
 
           {step === 7 ? (
             <div className="space-y-6">
-              <div className="text-text-soft">Paste any required Nav.com details below.</div>
-              <textarea
-                value={form.nav}
-                onChange={onField('nav')}
-                rows={8}
-                className={`${inputClass} resize-none`}
-                placeholder="Enter Nav.com information here"
-              />
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="text-text-soft">Nav.com details (optional).</div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSkips((p) => ({ ...p, nav: true }));
+                    setForm((p) => ({ ...p, nav: '', nav_username: '', nav_password: '' }));
+                    go(8);
+                  }}
+                  className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-white text-primary-navy font-heading font-semibold border border-border-gray transition-all hover:border-primary-navy/30 hover:shadow-[0_8px_30px_rgba(0,0,0,0.05)]"
+                >
+                  Skip
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                  <label className={labelClass}>Username / Email</label>
+                  <input
+                    value={form.nav_username}
+                    onChange={setNavField('nav_username')}
+                    className={inputClass}
+                    placeholder="Enter username or email"
+                    autoComplete="username"
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Password</label>
+                  <input
+                    value={form.nav_password}
+                    onChange={setNavField('nav_password')}
+                    className={inputClass}
+                    placeholder="Enter password"
+                    type="password"
+                    autoComplete="current-password"
+                  />
+                </div>
+              </div>
             </div>
           ) : null}
 
@@ -640,23 +1003,57 @@ export default function SecureUploadPortal() {
           ) : null}
 
           {step === 11 ? (
-            <UploadCard
-              title="EIN Letter"
-              subtitle="IRS CP575"
-              accepted="Accepted: PDF, PNG, JPG"
-              value={uploads.ein}
-              onPick={(file) => upload('ein', file)}
-            />
+            <div className="space-y-6">
+              <UploadCard
+                title="EIN Letter (Optional)"
+                subtitle="IRS CP575"
+                accepted="Accepted: PDF, PNG, JPG"
+                value={uploads.ein}
+                onPick={(file) => upload('ein', file)}
+              />
+              {!uploads.ein ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSkips((p) => ({ ...p, ein: true }));
+                    setUploads((p) => ({ ...p, ein: '' }));
+                    const session = portalSession.get() || {};
+                    portalSession.set({ ...session, uploads: { ...(session.uploads || {}), ein: '' } });
+                    go(12);
+                  }}
+                  className="w-full inline-flex items-center justify-center px-8 py-4 rounded-full font-heading font-semibold transition-all bg-white text-primary-navy border border-border-gray hover:border-primary-navy/30 hover:shadow-[0_8px_30px_rgba(0,0,0,0.05)]"
+                >
+                  Skip This Document
+                </button>
+              ) : null}
+            </div>
           ) : null}
 
           {step === 12 ? (
-            <UploadCard
-              title="Articles of Incorporation"
-              subtitle=""
-              accepted="Accepted: PDF, PNG, JPG"
-              value={uploads.articles}
-              onPick={(file) => upload('articles', file)}
-            />
+            <div className="space-y-6">
+              <UploadCard
+                title="Articles of Incorporation (Optional)"
+                subtitle=""
+                accepted="Accepted: PDF, PNG, JPG"
+                value={uploads.articles}
+                onPick={(file) => upload('articles', file)}
+              />
+              {!uploads.articles ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSkips((p) => ({ ...p, articles: true }));
+                    setUploads((p) => ({ ...p, articles: '' }));
+                    const session = portalSession.get() || {};
+                    portalSession.set({ ...session, uploads: { ...(session.uploads || {}), articles: '' } });
+                    go(13);
+                  }}
+                  className="w-full inline-flex items-center justify-center px-8 py-4 rounded-full font-heading font-semibold transition-all bg-white text-primary-navy border border-border-gray hover:border-primary-navy/30 hover:shadow-[0_8px_30px_rgba(0,0,0,0.05)]"
+                >
+                  Skip This Document
+                </button>
+              ) : null}
+            </div>
           ) : null}
 
           {step === 13 ? (

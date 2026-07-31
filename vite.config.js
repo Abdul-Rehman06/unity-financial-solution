@@ -14,6 +14,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '/unity-financial-solution/server/api'),
       },
+      '/server/api': {
+        target: 'http://localhost',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/server\/api/, '/unity-financial-solution/server/api'),
+      },
     },
   },
 })
